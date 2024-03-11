@@ -1,63 +1,45 @@
-import React, { useState } from 'react';
-import { TextField, Button, Typography, Container,Grid,Paper,Avatar } from '@mui/material';
+import React, { useState} from 'react';
+import { useNavigate } from "react-router-dom";
+import { TextField, Button, Typography, Container,Grid,Paper } from '@mui/material';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import ErrorIcon from '@mui/icons-material/Error';
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 
-const ForgetPassword = () => {
+ export  const ForgetPassword = () => {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [step, setStep] = useState(1);
+  const navigate = useNavigate();
   const paperStyle={padding :20,height:'70vh',width:380, margin:"20px auto"}
-  const avatarStyle={backgroundColor:'blue'}
-
-  const sendOtp = async () => {
-    try {
-      const response = await axios.post('http://your-backend-url/send-otp', { email });
-      if (response.data.success) {
-        setStep(2);
-      } else {
-        alert('Failed to send OTP. Please try again.');
+  const sendOtp = () => {
+    
+       const data = {
+           email:email,
+       }
+       try{
+       axios({
+        method: 'POST',
+        url :'http://ec2-13-127-120-169.ap-south-1.compute.amazonaws.com:4000/api/v1/forgot/password', 
+        data:data}).then(()=>{        
+          if (data) {
+            alert("Otp sent to email.....");
+          } else {
+         alert('Failed to send OTP. Please try again.');
+  }            
+        }
+        )
       }
-    } catch (error) {
-      console.error('Error sending OTP:', error);
-      alert('Failed to send OTP. Please try again.');
-    }
+      catch(e) {
+        console.log("error", e);
+   }
+   navigate("/resetpassword");
   };
-
-  const verifyOtp = async () => {
-    try {
-      const response = await axios.post('http://your-backend-url/verify-otp', { email, otp });
-      if (response.data.success) {
-        setStep(3);
-      } else {
-        alert('Invalid OTP. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error verifying OTP:', error);
-      alert('Failed to verify OTP. Please try again.');
-    }
-  };
-
-  const resetPassword = async () => {
-    try {
-      const response = await axios.post('http://your-backend-url/reset-password', { email, newPassword });
-      if (response.data.success) {
-        alert('Password reset successful!');
-      } else {
-        alert('Failed to reset password. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error resetting password:', error);
-      alert('Failed to reset password. Please try again.');
-    }
-  };
-
+  const resendOTP = () => {
+    sendOtp(); // Resend OTP using the sendOTP function
+};
   return (
     <Container maxWidth="sm">
-      {step === 1 && (
+       
         <div>
           <Grid>
           <Paper elevation={10} style={paperStyle}>
@@ -74,7 +56,9 @@ const ForgetPassword = () => {
             margin="normal"
           />
           <Grid style={{textAlign:"center"}}>
-          <Button variant="contained" onClick={sendOtp}>Send OTP</Button>
+          <Button variant="contained"type='button' onClick={()=>sendOtp()}>Send OTP</Button>
+          <p>resend the otp click </p>
+            <Link to="/" onClick={resendOTP}>Resend OTP</Link>
           </Grid>
           <label><ArrowCircleLeftIcon style={{color:"blue",fontSize:'25px'}}></ArrowCircleLeftIcon> back to</label>
           <Link to="/login"> login</Link>
@@ -82,36 +66,6 @@ const ForgetPassword = () => {
           </Grid>
           
         </div>
-      )}
-      {step === 2 && (
-        <div>
-          <Typography variant="h4" gutterBottom>Verify OTP</Typography>
-          <TextField
-            label="Enter OTP"
-            fullWidth
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-            margin="normal"
-          />
-          <Button variant="contained" onClick={verifyOtp}>Verify OTP</Button>
-        </div>
-      )}
-      {step === 3 && (
-        <div>
-          <Typography variant="h4" gutterBottom>Reset Password</Typography>
-          <TextField
-            label="Enter new password"
-            type="password"
-            fullWidth
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            margin="normal"
-          />
-          <Button variant="contained" onClick={resetPassword}>Reset Password</Button>
-        </div>
-      )}
-    </Container>
-  );
-};
-
-export default ForgetPassword;
+        </Container>
+      )
+      }
